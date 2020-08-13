@@ -3,26 +3,30 @@
 name: 'kb1-64x6'                       # ideally no spaces
 gpu: 0                                 # gpu id to process on
 
+## I follow Chads work, 4000 games, 250 steps, 
+
 dataset: 
-  num_chunks: 71392                   # newest nof chunks to parse
+  num_chunks: 4000                   # newest nof chunks to parse (chunks is games, for all I know).
+  allow_less_chunks: true
   train_ratio: 0.90                    # trainingset ratio
   # For separated test and train data.
   # input_train: '/home/hans/training-run2-test70-20200701-2117/' # supports glob
   # input_test: '/home/hans/training-run2-test70-20200701-2117/'  # supports glob
   # For a one-shot run with all data in one directory.
   # input: '/path/to/chunks/*/draw/'
-  input: '/home/hans/training-run2-test70-20200701-2117/'
+  input: '/home/hans/.cache/lc0/*/'
+  ## experimental_v5_only_dataset: true # requires v5 training format support which appeared in March 22 2020.
 
 training:
-    batch_size: 1024                   # training batch (reduced to 1024 from 2048 to work on the GTX 950)
-    test_steps: 2000                   # eval test set values after this many steps
+    batch_size: 512                   # training batch (reduced to 1024 from 2048 to work on the GTX 950)
+    test_steps: 400                   # eval test set values after this many steps
     train_avg_report_steps: 200        # training reports its average values after this many steps.
-    total_steps: 140000                # terminate after these steps
+    total_steps: 4000                # terminate after these steps
     warmup_steps: 250                  # if global step is less than this, scale the current LR by ratio of global step to this value
     # checkpoint_steps: 10000          # optional frequency for checkpointing before finish
     shuffle_size: 524288               # size of the shuffle buffer
-    lr_values:                         # list of learning rates
-        - 0.02
+    lr_values:                         # list of learning rates (Only the first will be used, since the lr_boundaries are higher than total_steps). 0.2 is a rather high learning rate, especially considering that small batch size.
+        - 0.2
         - 0.002
         - 0.0005
     lr_boundaries:                     # list of boundaries
