@@ -9,7 +9,7 @@ dataset:
   num_chunks: 4000                   # newest nof chunks to parse (chunks is games, for all I know).
   allow_less_chunks: true
   train_ratio: 0.90                    # trainingset ratio
-  input: '.cache/lc0/data-ewzgchpjjsvv/' # this can be a location on the game generating client if you use sshfs
+  input: '.cache/lc0/*/' # this can be a location on the game generating client if you use sshfs
   ## experimental_v5_only_dataset: true # requires v5 training format support which appeared in March 22 2020.
 
 training:
