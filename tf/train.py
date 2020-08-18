@@ -468,8 +468,11 @@ def main(cmd):
         else:
             tfprocess.save_leelaz_weights_v2(cmd.output)
 
+    print("about to shutdown train_parser")
     train_parser.shutdown()
+    print("train_parser shutdown")
     test_parser.shutdown()
+    print("test_parser shutdown")
 
 
 if __name__ == "__main__":
