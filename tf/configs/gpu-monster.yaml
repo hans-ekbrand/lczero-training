@@ -9,15 +9,15 @@ dataset:
   num_chunks: 4000                   # newest nof chunks to parse (chunks is games, for all I know).
   allow_less_chunks: true
   train_ratio: 0.90                    # trainingset ratio
-  input: '/mnt/leela-training-games/bar/.cache/lc0/*/' # this is a location on the game generating client.
+  input: '/mnt/leela-training-games/bar/lc0/*/' # this is a location on the game generating client.
   ## experimental_v5_only_dataset: true # requires v5 training format support which appeared in March 22 2020.
 
 training:
     batch_size: 1500                   # training batch size. If you have the memory, 4096 is reported to be even faster. Note the linear correlation between batch size and learning rate!
-    test_steps: 50                   # eval test set values after this many steps
-    train_avg_report_steps: 125        # training reports its average values after this many steps.
-    total_steps: 250                # terminate after these steps
-    warmup_steps: 250                  # if global step is less than this, scale the current LR by ratio of global step to this value
+    test_steps: 5                   # eval test set values after this many steps
+    train_avg_report_steps: 15        # training reports its average values after this many steps.
+    total_steps: 25                # terminate after these steps
+    warmup_steps: 25                  # if global step is less than this, scale the current LR by ratio of global step to this value
     # checkpoint_steps: 10000          # optional frequency for checkpointing before finish
     shuffle_size: 524288               # size of the shuffle buffer
     lr_values:                         # list of learning rates
