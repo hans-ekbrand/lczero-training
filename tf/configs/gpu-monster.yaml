@@ -13,7 +13,7 @@ dataset:
   ## experimental_v5_only_dataset: true # requires v5 training format support which appeared in March 22 2020.
 
 training:
-    batch_size: 1500                   # training batch (reduced to 512 from 2048 to work on the GTX 950). If you have the memory, 4096 is reported to be even faster. Note the linear correlation between batch size and learning rate!
+    batch_size: 1500                   # training batch size. If you have the memory, 4096 is reported to be even faster. Note the linear correlation between batch size and learning rate!
     test_steps: 50                   # eval test set values after this many steps
     train_avg_report_steps: 125        # training reports its average values after this many steps.
     total_steps: 250                # terminate after these steps

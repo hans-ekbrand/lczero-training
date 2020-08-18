@@ -7,8 +7,7 @@ variant=bar
 
 mkdir -p ~/leela-training-games/${variant}/.cache/lc0
 
-XDG_CACHE_HOME=$HOME/leela-training-games/${variant}
-export $XDG_CACHE_HOME
+export XDG_CACHE_HOME=$HOME/leela-training-games/${variant}
 
 if [[  -z $1 ]]; then
     echo "Required parameter counter missing. To start over use 1"
