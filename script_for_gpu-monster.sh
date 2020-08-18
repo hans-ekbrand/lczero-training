@@ -22,7 +22,7 @@ net_dir=$HOME/leela-nets/${variant}
 mkdir -p $net_dir
 
 ## make sure this is not greater than num_chunks in ${variant}.yaml, or some games will never be used in training.
-number_of_games_per_net=10
+number_of_games_per_net=4000
 
 until false # run this loop until further notice
   do
@@ -38,7 +38,7 @@ until false # run this loop until further notice
 
   # train a new net
   docker start 18e24368f7d8
-  docker exec -it 18e24368f7d8 bash /mnt/train_in_docker.sh $i
+  docker exec -it 18e24368f7d8 bash /mnt/train_in_docker.sh $i $variant
 
   ((i=i+1))
 done
