@@ -30,7 +30,7 @@ training:
         - 13000000
     policy_loss_weight: 1.0            # weight of policy loss
     value_loss_weight: 1.0             # weight of value loss
-    path: '/home/hans'    # network storage dir
+    path: '/mnt'    # network storage dir
     moves_left_loss_weight: .01
 
 model:

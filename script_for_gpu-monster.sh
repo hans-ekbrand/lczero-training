@@ -5,7 +5,7 @@
 ## name for this experiment
 variant=bar
 
-mkdir -p ~/leela-training-games/${variant}/.cache/lc0
+mkdir -p ~/leela-training-games/${variant}/lc0
 
 export XDG_CACHE_HOME=$HOME/leela-training-games/${variant}
 
