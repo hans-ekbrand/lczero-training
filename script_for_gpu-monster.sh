@@ -47,7 +47,8 @@ until false # run this loop until further notice
   docker start 18e24368f7d8
   docker attach 18e24368f7d8
   export LD_LIBRARY_PATH=/usr/local/cuda/lib64
-  python3 src/lczero-training/tf/train.py --cfg src/lczero-training/tf/configs/gpu-monster.yaml --output /mnt/leela-nets/${i}.gz;
+  python3 lczero-training/tf/train.py --cfg lczero-training/tf/configs/gpu-monster.yaml --output /mnt/leela-nets/${i}.gz
+  exit ## exits docker only
 
   ((i=i+1))
 done
