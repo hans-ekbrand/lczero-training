@@ -21,7 +21,7 @@ if [[  -z $3 ]]; then
     exit 0
 else
     ## counter to keep track of the number of the current net, so we can restart the process without overwriting existing nets.
-    i=$1
+    i=$3
 fi
 
 ## where are the nets stored?
