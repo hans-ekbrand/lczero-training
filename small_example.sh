@@ -19,7 +19,7 @@ else
     ## counter to keep track of the number of the current net, so we can restart the process without overwriting existing nets.
     i=$1
 fi
-  
+
 ## where are the nets stored?
 net_dir=$HOME/leela-nets/${variant}
 mkdir -p $net_dir
