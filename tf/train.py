@@ -456,6 +456,9 @@ def main(cmd):
     num_evals = cfg['training'].get('num_test_positions',
                                     len(test_chunks) * 10)
     num_evals = max(1, num_evals // ChunkParser.BATCH_SIZE)
+    ## try to workaround an out of memory problem START
+    num_evals = 1
+    ## try to workaround an out of memory problem STOP
     print("Using {} evaluation batches".format(num_evals))
 
     tfprocess.process_loop_v2(total_batch_size,
