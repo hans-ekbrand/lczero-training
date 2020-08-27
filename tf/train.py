@@ -456,9 +456,9 @@ def main(cmd):
     num_evals = cfg['training'].get('num_test_positions',
                                     len(test_chunks) * 10)
     num_evals = max(1, num_evals // ChunkParser.BATCH_SIZE)
-    ## try to workaround an out of memory problem START
-    num_evals = 1
-    ## try to workaround an out of memory problem STOP
+    # ## try to workaround an out of memory problem START
+    # num_evals = 1
+    # ## try to workaround an out of memory problem STOP
     print("Using {} evaluation batches".format(num_evals))
 
     tfprocess.process_loop_v2(total_batch_size,
@@ -471,11 +471,11 @@ def main(cmd):
         else:
             tfprocess.save_leelaz_weights_v2(cmd.output)
 
-    print("about to shutdown train_parser")
+    # print("about to shutdown train_parser")
     train_parser.shutdown()
-    print("train_parser shutdown")
+    # print("train_parser shutdown")
     test_parser.shutdown()
-    print("test_parser shutdown")
+    # print("test_parser shutdown")
 
 
 if __name__ == "__main__":
