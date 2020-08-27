@@ -25,7 +25,7 @@ net_dir=$HOME/leela-nets/${variant}
 mkdir -p $net_dir
 
 ## make sure this is not greater than num_chunks in ${variant}.yaml, or some games will never be used in training.
-number_of_games_per_net=400
+number_of_games_per_net=800
 
 until false # run this loop until further notice
   do
