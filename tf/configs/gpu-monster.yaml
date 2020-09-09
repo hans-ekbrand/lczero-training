@@ -4,7 +4,8 @@ name: 'kb1-64x6-aries'                       # ideally no spaces
 gpu: 0                                 # gpu id to process on
 
 # based on Chads recommendations, 4000 games, 250 steps per net, learning rate 0.5 until no improvement.
-# I started out with 400 chunks, 25 steps per net, learning rate 0.25 and changed to 4000, 250, 0.25 at net 172
+# I started out with 400 chunks, 25 steps per net, learning rate 0.25 and changed to 4000, 125, 0.25 at net 172
+# First learning rate drop at step 32250, net 336.
 
 dataset: 
   num_chunks: 4000                   # newest nof chunks to parse (chunks is games, for all I know).
@@ -24,11 +25,11 @@ training:
     lr_values:                         # list of learning rates
     # if you increase the batch_size by four, then increase the learning rate be four as well!
         - 0.25
-        - 0.01
+        - 0.025
         - 0.001
     lr_boundaries:                     # list of boundaries. Ignore these, change Learning Rate manually when there is no Elo-improvment using a fixed anchor, e.g. Stockfish.
-        - 10000000
-        - 13000000
+        - 32250			       # starting with net 336.gz
+        - 64500
     policy_loss_weight: 1.0            # weight of policy loss
     value_loss_weight: 1.0             # weight of value loss
     path: '/mnt'    # network storage dir
