@@ -4,7 +4,8 @@ name: 'kb1-64x6-aries'                       # ideally no spaces
 gpu: 0                                 # gpu id to process on
 
 # based on Chads recommendations, 4000 games, 250 steps per net, learning rate 0.5 until no improvement.
-# I started out with 400 chunks, 25 steps per net, learning rate 0.25 and changed to 4000, 125, 0.25 at net 172
+# I started out with 400 chunks, 25 steps per net, learning rate 0.25 and changed to 4000, 250, 0.25 at net 172
+# At net 240 reduced the number of steps per net to 125 (from 250).
 # First learning rate drop at step 32250, net 336.
 
 dataset: 
