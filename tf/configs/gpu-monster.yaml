@@ -9,9 +9,12 @@ gpu: 0                                 # gpu id to process on
 # First learning rate drop at step 32250, net 338. Motivated by no improvement vs external opponent in 30 nets (also policy accuracy does not seem to be improving).
 # Just before dropping the LR, I manually made a net (337) using 120000 chunks and 1250 steps, so extract as much as possible from the existing data
 # After that back to 4000 chunks, 125 steps, but now at lr 0.025
+# change to 8000 fresh games per net and 250 steps, starting with net 477.
+# increasing window size to 16000, keeping 8000 new starting with net 489.
 
 dataset: 
-  num_chunks: 8000                   # newest nof chunks to parse (chunks is games, for all I know).
+  num_chunks: 16000                   # newest nof chunks to parse (chunks is games, for all I know).
+#  num_chunks: 8000                   # newest nof chunks to parse (chunks is games, for all I know).
 #  num_chunks: 120000                   # newest nof chunks to parse (chunks is games, for all I know).  
   allow_less_chunks: true
   train_ratio: 0.90                    # trainingset ratio
