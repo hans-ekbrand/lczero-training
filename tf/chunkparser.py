@@ -157,12 +157,16 @@ class ChunkParser:
         """
         Terminates all the workers
         """
+        # print("about to shutdown self".format(len(self.readers)))
         for i in range(len(self.readers)):
+            # print("shutting down self")
             self.processes[i].terminate()
             self.processes[i].join()
             self.readers[i].close()
             self.writers[i].close()
+        # print("terminaing self")
         self.chunk_process.terminate()
+        # print("joining self")
         self.chunk_process.join()
 
     def init_structs(self):
@@ -370,7 +374,10 @@ class ChunkParser:
                     yield s
                 except EOFError:
                     print("Reader EOF")
-                    self.readers.remove(r)
+                    ## HE Fix the self.readers.remove(r) stalls the ﻿test_parser.shutdown() START
+                    return
+                    # self.readers.remove(r)
+                    ## HE Fix the self.readers.remove(r) stalls the ﻿test_parser.shutdown() STOP
         # drain the shuffle buffer.
         while True:
             s = sbuff.extract()
