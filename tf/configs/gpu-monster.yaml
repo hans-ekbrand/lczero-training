@@ -34,7 +34,8 @@ training:
 # list of learning rates    
 # if you increase the batch_size by four, then increase the learning rate by four as well!
 #        - 0.25
-        - 0.025
+#        - 0.025
+        - 0.01
         - 0.001
 # list of boundaries. These seems to be ignored when train.py is restarted for each net, possibly related to "Error occurred when finalizing GeneratorDataset iterator: Failed precondition: Python interpreter state is not initialized. The process may be terminated.", perhaps the iterator is forgotten?
 # So, you have to change Learning Rate manually, and you should do it when there is no Elo-improvment using a fixed anchor, e.g. Stockfish.

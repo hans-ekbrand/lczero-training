@@ -159,14 +159,14 @@ class ChunkParser:
         """
         # print("about to shutdown self".format(len(self.readers)))
         for i in range(len(self.readers)):
-            # print("shutting down self")
+            print("shutting processes, readers and writers")
             self.processes[i].terminate()
             self.processes[i].join()
             self.readers[i].close()
             self.writers[i].close()
-        # print("terminaing self")
+        print("shutting down chunk_process")
         self.chunk_process.terminate()
-        # print("joining self")
+        print("joining chunk_process")
         self.chunk_process.join()
 
     def init_structs(self):
