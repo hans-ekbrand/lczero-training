@@ -28,5 +28,5 @@ lr=$9" > config.2
 bash fill.sh config.2 tf/configs/template.yaml tf/configs/${1}.yaml
 
 for i in {1..50}; do
-    ./single_run.sh $1 $10
+    ./single_run.sh $1 ${10}
 done

@@ -4,7 +4,7 @@ name: 'kb1-64x6-beta'
 gpu: 0
 
 dataset: 
-  num_chunks: 10
+  num_chunks: 4000
   allow_less_chunks: true
   train_ratio: 0.90
   input: '/mnt/leela-training-games/beta/lc0/*/'
@@ -13,7 +13,7 @@ training:
     batch_size: 1024
     test_steps: 5
     train_avg_report_steps: 50
-    total_steps:  2
+    total_steps:  25
     warmup_steps: 1
     shuffle_size: 524288
     lr_values:
