@@ -23,7 +23,7 @@ number_of_games_per_net=$2
 latest_net=`ls -Str ${net_dir} | tail -n 1`
 if [[ -z $latest_net ]]; then
     ## No net available yet
-    $HOME/src/lc0/build/release/lc0 selfplay --training --games=$number_of_games_per_net --parallelism=12 --visits=800 --backend=random
+    $HOME/src/lc0/build/release/lc0 selfplay --syzygy-paths=/home/hans/syzygy --no-adjudicate --training --training --games=$number_of_games_per_net --parallelism=12 --visits=800 --backend=random
     i=1
 else
     # generate new training data using the latest net, and save a new net with +1 to the filename.
