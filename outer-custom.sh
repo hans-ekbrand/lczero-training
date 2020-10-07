@@ -1,9 +1,10 @@
 ## fully automated reinforcement training with varying number of games per net, number of chunks per net, number of steps per net.
 ## 
 ##          $1   $2    $3  $4 $5  $6  $7   $8  $9 $10
-## outer.sh beta $HOME 800 25 0.5 400 4000 25 0.5 800
+## outer-custom.sh beta $HOME 800 25 0.5 400 4000 25 0.5 800
 ##          name home_directory chunks steps lr games_per_net; chunks, steps lr games_per_net
-## for a quick test ./outer.sh beta $HOME 10 2 0.5 5 40 25 0.5 20
+## for a quick test ./outer-custom.sh beta $HOME 10 2 0.5 5 40 25 0.5 20 > ~/beta.log
+## rm -rf ~/kb1-64x6-beta ~/leela-nets/beta ~/leela-training-games/beta ~/beta.log
 
 ## Set up a yaml-file
 
