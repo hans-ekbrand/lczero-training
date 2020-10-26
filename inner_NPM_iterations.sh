@@ -20,11 +20,7 @@ chunks=$5
 steps=$7
 lr=$8" > config.1
 
-if [[ -a $HOME/.tensorflow_runs_in_docker ]] ; then
-    ./fill.sh config.1 tf/configs/template-docker.yaml tf/configs/${1}.yaml
-else
-    ./fill.sh config.1 tf/configs/template.yaml tf/configs/${1}.yaml
-fi
+./fill.sh config.1 tf/configs/template.yaml tf/configs/${1}.yaml
 
 ## Start training
 KLD=$initial_KLD
