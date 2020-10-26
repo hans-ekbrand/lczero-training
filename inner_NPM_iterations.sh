@@ -28,7 +28,7 @@ TARGET_NPM=${4}
 for ((i=1;i<=$9;i++)); do
     ./single_run_KLD_book.sh $1 ${KLD} $3 $6
     ## find out the average NPM previous run
-    NPM=`grep "final " ~/turbo2.log | tail -n 1 | mawk {'print $22'}`
+    NPM=`grep "final " ${HOME}/${1}.log | tail -n 1 | mawk {'print $22'}`
     scale=`bc -l <<< "$TARGET_NPM/$NPM"`
     echo "npm previous run had ${NPM}, based on KLD ${KLD}, target NPM is ${TARGET_NPM}"
     KLD=`bc -l <<< "$KLD/$scale"`
