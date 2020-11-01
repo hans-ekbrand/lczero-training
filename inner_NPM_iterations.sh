@@ -25,12 +25,26 @@ lr=$8" > config.1
 ## Start training
 KLD=$initial_KLD
 TARGET_NPM=${4}
+
+# We want to use the book sequentially, but to avoid overfit when this file is run many time, we need to randomize the starting point.
+
+max_of_current_book=`wc ${HOME}/${3} | mawk {'print $1'}`
+## pick a seed between 0 and max_of_current_book
+
+number_one=$RANDOM
+number_two=$RANDOM
+let "number_three=number_two*$number_one"
+let "seed=number_three %= max_of_current_book"
+echo "Seed for opening book: $seed"
+
 for ((i=1;i<=$9;i++)); do
-    ./single_run_KLD_book.sh $1 ${KLD} $3 $6
     ## find out the average NPM previous run
     NPM=`grep "final " ${HOME}/${1}.log | tail -n 1 | mawk {'print $22'}`
-    scale=`bc -l <<< "$TARGET_NPM/$NPM"`
-    echo "npm previous run had ${NPM}, based on KLD ${KLD}, target NPM is ${TARGET_NPM}"
-    KLD=`bc -l <<< "$KLD/$scale"`
-    echo "Adjusting KLD using scale: $scale. New KLD is $KLD"
+    if [[ -n $NPM ]]; then
+	scale=`bc -l <<< "${TARGET_NPM}/${NPM}"`
+	echo "npm previous run had ${NPM}, based on KLD ${KLD}, target NPM is ${TARGET_NPM}"
+	KLD=`bc -l <<< "$KLD/$scale"`
+	echo "Adjusting KLD using scale: $scale. New KLD is $KLD"
+    fi
+    ./single_run_KLD_book.sh $1 ${KLD} $3 $6 ${seed}
 done

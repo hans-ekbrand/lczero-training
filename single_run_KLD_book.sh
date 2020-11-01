@@ -36,7 +36,7 @@ fi
 
 ## generate a new version of the opening book.
 let lines_per_book=${4}*4 ## one game occupies four lines
-let ending_line_of_new_chunk=i*lines_per_book
+let ending_line_of_new_chunk=i*lines_per_book+${5}
 max_of_current_book=`wc ${HOME}/${book} | mawk {'print $1'}`
 ## echo "max of current book: $max_of_current_book, want to end at $ending_line_of_new_chunk"
 ## if this is outside the current book, then restart from the remainder number of rows
