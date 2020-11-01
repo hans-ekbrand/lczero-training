@@ -7,7 +7,7 @@ dataset:
   num_chunks: %chunks%
   allow_less_chunks: true
   train_ratio: 0.90
-  input: '%home%/leela-training-games/%variant%/lc0/*/'
+  input: '%home%/leela-training-games/%variant%/rescored/*/'
 
 training:
     batch_size: 1024

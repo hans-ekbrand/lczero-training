@@ -55,8 +55,17 @@ if [[ -z $latest_net ]]; then
     $HOME/src/lc0/build/release/lc0 selfplay --syzygy-paths=/home/hans/syzygy --no-adjudicate --training --games=-2 --parallelism=32 --visits=800 --backend=random --openings-pgn=$HOME/${actual_book} --openings-mode=sequential;
 else
     # generate new training data using the latest net, and save a new net with +1 to the filename.
-    $HOME/src/lc0/build/release/lc0 selfplay -w ${net_dir}/${latest_net} --training --games=-2 --syzygy-paths=/home/hans/syzygy --no-adjudicate --visits=10000  --backend-opts="(backend=cudnn,gpu=0),(backend=cudnn,gpu=1),(backend=cudnn,gpu=2),(backend=cudnn,gpu=3),(backend=cudnn,gpu=4),(backend=cudnn,gpu=5)" --parallelism=12 --cpuct=1.32 --cpuct-at-root=1.9 --root-has-own-cpuct-params=true --resign-percentage=0.0 --resign-playthrough=100 --temperature=0.0 --temp-endgame=0.0 --temp-cutoff-move=60 --temp-visit-offset=0.0 --fpu-strategy=reduction --fpu-value=0.23 --fpu-strategy-at-root=absolute --fpu-value-at-root=1.0 --policy-softmax-temp=1.4 --minimum-kldgain-per-node=$KLD --resign-wdlstyle=true --noise-epsilon=0.1 --noise-alpha=0.12 --sticky-endgames=true --moves-left-max-effect=0.2 --moves-left-threshold=0.0 --moves-left-slope=0.008 --moves-left-quadratic-factor=1.0 --moves-left-constant-factor=0.0 --openings-pgn=${HOME}/${actual_book} --openings-mode=sequential;
+   $HOME/src/lc0/build/release/lc0 selfplay -w ${net_dir}/${latest_net} --training --games=-2 --syzygy-paths=/home/hans/syzygy --no-adjudicate --visits=10000  --backend-opts="(backend=cudnn,gpu=0),(backend=cudnn,gpu=1),(backend=cudnn,gpu=2),(backend=cudnn,gpu=3),(backend=cudnn,gpu=4),(backend=cudnn,gpu=5)" --parallelism=12 --cpuct=1.32 --cpuct-at-root=1.9 --root-has-own-cpuct-params=true --resign-percentage=0.0 --resign-playthrough=100 --temperature=0.0 --temp-endgame=0.0 --temp-cutoff-move=60 --temp-visit-offset=0.0 --fpu-strategy=reduction --fpu-value=0.23 --fpu-strategy-at-root=absolute --fpu-value-at-root=1.0 --policy-softmax-temp=1.4 --minimum-kldgain-per-node=$KLD --resign-wdlstyle=true --noise-epsilon=0.1 --noise-alpha=0.12 --sticky-endgames=true --moves-left-max-effect=0.2 --moves-left-threshold=0.0 --moves-left-slope=0.008 --moves-left-quadratic-factor=1.0 --moves-left-constant-factor=0.0 --openings-pgn=${HOME}/${actual_book} --openings-mode=sequential;
 fi
+
+# rescore
+## find the current directory
+full_current_dir=`ls -Strd ${XDG_CACHE_HOME}/lc0/data* | tail -n 1`
+current_dir=`basename $full_current_dir`
+output_dir=${XDG_CACHE_HOME}/rescored/${current_dir}
+mkdir -p ${output_dir}
+$HOME/src/lc0/build/release/rescorer rescore --syzygy-paths=/home/hans/syzygy --threads=2 --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir} --no-rescore
+rmdir ${full_current_dir}
 
 # train a new net
 # If tensorflow is to be run in docker, place a file `.tensorflow_runs_in_docker` in $HOME and adjust the docker id below, and edit the script `train_in_docker.sh` to fit your settings.

@@ -1,5 +1,5 @@
 ## fully automated reinforcement training including automatically adjusted minimumKLD, varying number of games per net, number of chunks per net, number of steps per net.
-## requires an opening book
+## requires an opening book, and rescorer. EGTB:s could be made optional, but current rescorer depends on having them even when not rescoring.
 ## 
 ##            $1     $2             $3              $4         $5     $6    $7    $8    $9
 ## ./inner.sh turbo2 $HOME          turbo2-book.png 800        16000  1200  250   0.25  25
