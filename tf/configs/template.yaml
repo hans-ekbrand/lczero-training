@@ -1,20 +1,22 @@
 %YAML 1.2
 ---
-name: 'kb1-64x6-%variant%'
+name: 'kb1-%filters%x%blocks%-%variant%'
 gpu: 0
 
 dataset: 
   num_chunks: %chunks%
   allow_less_chunks: true
   train_ratio: 0.90
-  input: '%home%/leela-training-games/%variant%/rescored/*/'
+  # use a ramdisk for training
+  input: '/run/user/1000/merged/'
 
 training:
     batch_size: 1024
+    num_batch_splits: 2
     test_steps: 5
-    train_avg_report_steps: 50
+    train_avg_report_steps: 50    
     total_steps:  %steps%
-    warmup_steps: 1
+    warmup_steps: 250
     shuffle_size: 524288
     lr_values:
     - %lr%
@@ -26,8 +28,8 @@ training:
     moves_left_loss_weight: .01
 
 model:
-  filters: 64
-  residual_blocks: 6
+  filters: %filters%
+  residual_blocks: %blocks%
   se_ratio: 4
 
   
