@@ -37,18 +37,25 @@ def get_chunks(data_prefix):
 
 
 def get_all_chunks(path):
+    if isinstance(path, list):
+        print("getting chunks for", path)
+        chunks = []
+        for i in path:
+            chunks += get_all_chunks(i)
+        return chunks
     chunks = []
     for d in glob.glob(path):
         chunks += get_chunks(d)
+    print("got", len(chunks), "chunks for", path)
     return chunks
 
 
-def get_latest_chunks(path, num_chunks, allow_less):
+def get_latest_chunks(path, num_chunks, allow_less, sort_key_fn):
     chunks = get_all_chunks(path)
     if len(chunks) < num_chunks:
         if allow_less:
-            print("sorting {} chunks...".format(len(chunks)), end='')
-            chunks.sort(key=os.path.getmtime, reverse=True)
+            print("sorting {} chunks...".format(len(chunks)), end='', flush=True)
+            chunks.sort(key=sort_key_fn, reverse=True)
             print("[done]")
             print("{} - {}".format(os.path.basename(chunks[-1]),
                                    os.path.basename(chunks[0])))
@@ -58,14 +65,23 @@ def get_latest_chunks(path, num_chunks, allow_less):
             print("Not enough chunks {}".format(len(chunks)))
             sys.exit(1)
 
-    print("sorting {} chunks...".format(len(chunks)), end='')
-    chunks.sort(key=os.path.getmtime, reverse=True)
+    print("sorting {} chunks...".format(len(chunks)), end='', flush=True)
+    chunks.sort(key=sort_key_fn, reverse=True)
     print("[done]")
     chunks = chunks[:num_chunks]
     print("{} - {}".format(os.path.basename(chunks[-1]),
                            os.path.basename(chunks[0])))
     random.shuffle(chunks)
     return chunks
+
+
+def identity_function(name):
+    return name
+
+
+def game_number_for_name(name):
+    num_str = os.path.basename(name).upper().strip("ABCDEFGHIJKLMNOPQRSTUVWXYZ_-.")
+    return int(num_str)
 
 
 def extract_policy_bits(raw):
@@ -336,9 +352,9 @@ def select_extractor(mode):
         return extract_inputs_outputs_if2
     if mode == 3:
         return extract_inputs_outputs_if3
-    if mode == 4:
+    if mode == 4 or mode == 5:
         return extract_inputs_outputs_if4
-    if mode == 132:
+    if mode == 132 or mode == 133:
         return extract_inputs_outputs_if132
     assert (false)
 
@@ -358,14 +374,23 @@ def main(cmd):
                                              False)
     num_train = int(num_chunks * train_ratio)
     num_test = num_chunks - num_train
+    sort_type = cfg['dataset'].get('sort_type', 'mtime')
+    if sort_type == 'mtime':
+        sort_key_fn = os.path.getmtime
+    elif sort_type == 'number':
+        sort_key_fn = game_number_for_name
+    elif sort_type == 'name':
+        sort_key_fn = identity_function
+    else:
+        raise ValueError('Unknown dataset sort_type: {}'.format(sort_type))
     if 'input_test' in cfg['dataset']:
         train_chunks = get_latest_chunks(cfg['dataset']['input_train'],
-                                         num_train, allow_less)
+                                         num_train, allow_less, sort_key_fn)
         test_chunks = get_latest_chunks(cfg['dataset']['input_test'], num_test,
-                                        allow_less)
+                                        allow_less, sort_key_fn)
     else:
         chunks = get_latest_chunks(cfg['dataset']['input'], num_chunks,
-                                   allow_less)
+                                   allow_less, sort_key_fn)
         if allow_less:
             num_train = int(len(chunks) * train_ratio)
             num_test = len(chunks) - num_train
@@ -383,12 +408,19 @@ def main(cmd):
     # Load data with split batch size, which will be combined to the total batch size in tfprocess.
     ChunkParser.BATCH_SIZE = split_batch_size
 
+    value_focus_min = cfg['training'].get('value_focus_min', 1)
+    value_focus_slope = cfg['training'].get('value_focus_slope', 0)
+
     root_dir = os.path.join(cfg['training']['path'], cfg['name'])
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
     tfprocess = TFProcess(cfg)
     experimental_reads = max(2, mp.cpu_count() - 2) // 2
     extractor = select_extractor(tfprocess.INPUT_MODE)
+
+    if experimental_parser and (value_focus_min != 1 or value_focus_slope != 0):
+        raise ValueError('Experimental parser does not support non-default value \
+                          focus parameters.')
 
     def read(x):
         return tf.data.FixedLengthRecordDataset(
@@ -409,6 +441,8 @@ def main(cmd):
                                    shuffle_size=shuffle_size,
                                    sample=SKIP,
                                    batch_size=ChunkParser.BATCH_SIZE,
+                                   value_focus_min=value_focus_min,
+                                   value_focus_slope=value_focus_slope,
                                    workers=train_workers)
         train_dataset = tf.data.Dataset.from_generator(
             train_parser.parse,
@@ -425,6 +459,7 @@ def main(cmd):
                          .shuffle(shuffle_size)\
                          .batch(split_batch_size).map(extractor).prefetch(4)
     else:
+        # no value focus for test_parser
         test_parser = ChunkParser(test_chunks,
                                   tfprocess.INPUT_MODE,
                                   shuffle_size=shuffle_size,
