@@ -11,8 +11,10 @@ dataset:
   input: '/run/user/1000/merged/'
 
 training:
+    # batch_size: 2432
+    # batch_size: 2176
     batch_size: 1024
-    num_batch_splits: 2
+    num_batch_splits: 1
     test_steps: 50
     train_avg_report_steps: 50    
     total_steps:  %steps%
@@ -23,11 +25,11 @@ training:
     lr_boundaries:
     - 1000000
     policy_loss_weight: 1.0
-    value_loss_weight: 1.0
+    value_loss_weight: 1.9
     path: '%home%'
     moves_left_loss_weight: .01
-    value_focus_min: 0.5
-    value_focus_slope: 1.0    
+    value_focus_min: 0.03125
+    value_focus_slope: 1.0
 
 model:
   filters: %filters%

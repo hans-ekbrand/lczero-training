@@ -515,7 +515,7 @@ class TFProcess:
                 moves_left_loss = tf.constant(0.)
 
             total_loss = self.lossMix(policy_loss, value_loss,
-                                      moves_left_loss) + reg_term
+                                      moves_left_loss) + reg_term * 0.5
             if self.loss_scale != 1:
                 total_loss = self.optimizer.get_scaled_loss(total_loss)
         if self.wdl:
