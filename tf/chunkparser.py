@@ -410,7 +410,6 @@ class ChunkParser:
         version = chunkdata[0:4]
         if version == V6_VERSION:
             record_size = self.v6_struct.size
-            print("Version6 detected")
         elif version == V5_VERSION:
             record_size = self.v5_struct.size
         elif version == V4_VERSION:
@@ -422,7 +421,8 @@ class ChunkParser:
 
         for i in range(0, len(chunkdata), record_size):
             record = chunkdata[i:i + record_size]
-            if version == V6_VERSION:
+            ## only unpack every position if value_focus is activated.
+            if self.value_focus_min < 1 and version == V6_VERSION:
                 # value focus code, peek at best_q and orig_q from record (unpacks as tuple with one item)
                 best_q = struct.unpack('f', record[8284:8288])[0]
                 orig_q = struct.unpack('f', record[8328:8332])[0]
@@ -432,7 +432,7 @@ class ChunkParser:
                     diff_q = abs(best_q - orig_q)
                     thresh_p = self.value_focus_min + self.value_focus_slope * diff_q
                     if thresh_p < 1.0 and random.random() > thresh_p:
-                        continue  # Skip this record.
+                        continue  # Skip this record
 
             if self.sample > 1:
                 # Downsample, using only 1/Nth of the items, taking into account the effects of value focus.
