@@ -68,7 +68,6 @@ import tensorflow as tf
 import unittest
 import gzip
 from select import select
-import scipy.stats as stats # for a custom function for value focus
 
 V6_VERSION = struct.pack('i', 6)
 V5_VERSION = struct.pack('i', 5)
@@ -444,9 +443,7 @@ class ChunkParser:
                 # if orig_q is NaN, accept, else accept based on value focus
                 if not np.isnan(orig_q):
                     diff_q = abs(best_q - orig_q)
-                    # thresh_p = self.value_focus_min + self.value_focus_slope * diff_q
-                    # With value_focus_min=0.175 this should provide a resonable distribution of q.diffs (I have used it with skip=1, to speed things up)
-                    thresh_p = self.value_focus_min + stats.norm.pdf(diff_q, loc=0.20, scale=0.1) / stats.norm.pdf(0.20, loc=0.20, scale=0.1) * 0.95
+                    thresh_p = min(self.value_focus_max, self.value_focus_min + self.value_focus_slope * diff_q)
                     if thresh_p < 1.0 and random.random() > thresh_p:
                         continue
 
