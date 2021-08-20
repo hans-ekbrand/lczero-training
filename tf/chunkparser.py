@@ -443,10 +443,12 @@ class ChunkParser:
                 # if orig_q is NaN, accept, else accept based on value focus
                 if not np.isnan(orig_q):
                     diff_q = abs(best_q - orig_q)
-                    if diff_q > 0.2:
+                    if diff_q > self.value_focus_min:
                         thresh_p = self.value_focus_min + self.value_focus_slope * diff_q
                     else:
                         thresh_p = self.value_focus_min
+                    # if abs(best_q) > 0.3 and abs(best_q) < 0.6:
+                    #     thresh_p = thresh_p * 1.1
                     if thresh_p < 1.0 and random.random() > thresh_p:
                         continue
 
