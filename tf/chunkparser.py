@@ -67,6 +67,7 @@ import struct
 import tensorflow as tf
 import unittest
 import gzip
+import math
 from select import select
 
 V6_VERSION = struct.pack('i', 6)
@@ -327,6 +328,8 @@ class ChunkParser:
             plies_left = invariance_info
         plies_left = struct.pack('f', plies_left)
 
+        if input_format != self.expected_input_format:
+            return
         assert input_format == self.expected_input_format
 
         # Unpack bit planes and cast to 32 bit float
@@ -416,6 +419,8 @@ class ChunkParser:
             return
 
         for i in range(0, len(chunkdata), record_size):
+            # self.sample = ceil(self.sample * self.value_focus_min)
+            self.sample = 5
             if self.sample > 1:
                 # Downsample, using only 1/Nth of the items.
                 if random.randint(0, self.sample - 1) != 0:
@@ -441,18 +446,65 @@ class ChunkParser:
                 orig_q = struct.unpack('f', record[8328:8332])[0]
                 
                 # if orig_q is NaN, accept, else accept based on value focus
+                if np.isnan(orig_q):
+                    continue
                 if not np.isnan(orig_q):
                     diff_q = abs(best_q - orig_q)
-                    if diff_q > self.value_focus_min:
-                        thresh_p = self.value_focus_min + self.value_focus_slope * diff_q
+
+                    # if diff_q < 0.075:
+                    #     thresh_p = 0.03
+                    # if diff_q >= 0.075 and diff_q < 0.25:
+                    #     thresh_p = 0.4457143*diff_q - 0.003428571
+                    # if diff_q > 0.25:
+                    #     thresh_p = min(1, 0.1079964 - (-0.00003073625/-34.54513)*(1 - math.exp(+34.54513*diff_q)))
+
+                    # if diff_q < 0.075:
+                    #     thresh_p = 0.03
+                    # if diff_q >= 0.075:
+                    #     thresh_p = 2.984615 * diff_q - 0.1938462
+
+                    # if diff_q < 0.05:
+                    #     thresh_p = 0.03
+                    # # if diff_q >= 0.05 and diff_q < 0.20:
+                    # thresh_p = self.value_focus_min + diff_q * self.value_focus_slope
+                    ## flat vf
+                    thresh_p = self.value_focus_min
+                    ## i is the number of plies played.
+                    a = abs(best_q)
+                    b = 0.5 - a
+                    if b > 0:
+                        c = 0.5 - b
                     else:
-                        thresh_p = self.value_focus_min
+                        c = 0.5 + b
+                    my_factor = 1 + c * 1.0
+                    thresh_p = thresh_p * my_factor
+                    
+                    if abs(best_q) > 0.4 and abs(best_q) < 0.6 and i < 70:
+                        thresh_p = thresh_p * 1.2
+                    # if abs(best_q) >= 0.3 and abs(best_q) < 0.4 and i < 70:
+                    #     thresh_p = thresh_p * 1.1
+                    # if abs(best_q) >= 0.4 and abs(best_q) < 0.6 and i < 70:
+                    #     thresh_p = thresh_p * 1.3
+                    # if abs(best_q) > 0.2 and abs(best_q) <= 0.4 or abs(best_q) > 0.6 and abs(best_q) <= 0.8 :
+                    #     thresh_p = thresh_p * 1.1
+                    # if diff_q >= 0.20:
+                    #     thresh_p = 1.0
+
+                    # if diff_q < 0.075:
+                    #     thresh_p = self.value_focus_min
+                    # if diff_q > 0.075 and diff_q < self.value_focus_slope:
+                    #     thresh_p = self.value_focus_min + diff_q * 0.5
+                    # if diff_q > self.value_focus_slope:
+                    #     thresh_p = 1
                     # if abs(best_q) > 0.3 and abs(best_q) < 0.6:
                     #     thresh_p = thresh_p * 1.1
                     if thresh_p < 1.0 and random.random() > thresh_p:
                         continue
 
-            yield record
+            try:
+                yield record
+            except:
+                continue
 
     def task(self, chunk_filename_queue, writer):
         """
@@ -519,7 +571,8 @@ class ChunkParser:
         applying a random symmetry on the way.
         """
         for r in gen:
-            yield self.convert_v6_to_tuple(r)
+            if f := self.convert_v6_to_tuple(r):
+                yield f
 
     def batch_gen(self, gen):
         """
