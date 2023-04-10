@@ -69,6 +69,7 @@ import unittest
 import gzip
 import math
 from select import select
+from time import sleep
 
 V6_VERSION = struct.pack('i', 6)
 V5_VERSION = struct.pack('i', 5)
@@ -419,12 +420,6 @@ class ChunkParser:
             return
 
         for i in range(0, len(chunkdata), record_size):
-            # self.sample = ceil(self.sample * self.value_focus_min)
-            self.sample = 5
-            if self.sample > 1:
-                # Downsample, using only 1/Nth of the items.
-                if random.randint(0, self.sample - 1) != 0:
-                    continue  # Skip this record.
 
             record = chunkdata[i:i + record_size]
             # for earlier versions, append fake bytes to record to maintain size
@@ -444,67 +439,85 @@ class ChunkParser:
                 # value focus code, peek at best_q and orig_q from record (unpacks as tuple with one item)
                 best_q = struct.unpack('f', record[8284:8288])[0]
                 orig_q = struct.unpack('f', record[8328:8332])[0]
+
+            # # if orig_q is NaN, do not accept.
+            # if np.isnan(orig_q):
+            #     continue
+
+            # do not accept if best_q is nan
+            if np.isnan(best_q):
+                continue
+
+            # diff_q = abs(best_q - orig_q)
+
+            # # intercept = 0.05
+            # # amplitude_factor = 20
+            # intercept = self.value_focus_min
+            # amplitude_factor = self.value_focus_slope
+
+            # # assert amplitude_factor > 0
+
+            # # thresh_p = intercept + (math.sin(math.pi * 2 * best_q - math.pi/2) + 1) / amplitude_factor
+            # thresh_p = 0.05 + (math.sin(math.pi * 2 * best_q - math.pi/2) + 1) / 5
+            # thresh_p = 0.11 + (math.sin(math.pi * 2 * best_q - math.pi/2) + 1) / 100
+            # thresh_p = 1/20
+            ## For Jhortos 0.25-0.4
+            thresh_p = 0.065
+            if abs(best_q) >= 0.25 and abs(best_q) < 0.4:
+                thresh_p = 0.15
+
+            self.sample = 1
+            if self.sample > 1:
+                # Downsample, using only 1/Nth of the items.
+                if random.randint(0, self.sample - 1) != 0:
+                    continue  # Skip this record.
+
+            # ## For Jhortos 0.0-0.25
+            # thresh_p = 0.075
+            # # if abs(best_q) >= 0.08 and abs(best_q) < 0.20:
+            # #     thresh_p = 0.075 * 1.1
+
+            # if abs(best_q) >= 0.2 and abs(best_q) < 0.30:
+            #     thresh_p = 0.075 * 1.5
+
+            # if abs(best_q) >= 0.30 and abs(best_q) < 0.40:
+            #     thresh_p = 0.075 * 2
+
+
+            
                 
-                # if orig_q is NaN, accept, else accept based on value focus
-                if np.isnan(orig_q):
-                    continue
-                if not np.isnan(orig_q):
-                    diff_q = abs(best_q - orig_q)
+            # thresh_p = self.value_focus_min
+            # a = abs(best_q)
+            # b = 0.5 - a
+            # if b > 0:
+            #     c = 0.5 - b
+            # else:
+            #     c = 0.5 + b
+            # my_factor = 1 + c * 0.8
+            # thresh_p = thresh_p * my_factor
 
-                    # if diff_q < 0.075:
-                    #     thresh_p = 0.03
-                    # if diff_q >= 0.075 and diff_q < 0.25:
-                    #     thresh_p = 0.4457143*diff_q - 0.003428571
-                    # if diff_q > 0.25:
-                    #     thresh_p = min(1, 0.1079964 - (-0.00003073625/-34.54513)*(1 - math.exp(+34.54513*diff_q)))
-
-                    # if diff_q < 0.075:
-                    #     thresh_p = 0.03
-                    # if diff_q >= 0.075:
-                    #     thresh_p = 2.984615 * diff_q - 0.1938462
-
-                    # if diff_q < 0.05:
-                    #     thresh_p = 0.03
-                    # # if diff_q >= 0.05 and diff_q < 0.20:
-                    # thresh_p = self.value_focus_min + diff_q * self.value_focus_slope
-                    ## flat vf
-                    thresh_p = self.value_focus_min
-                    ## i is the number of plies played.
-                    a = abs(best_q)
-                    b = 0.5 - a
-                    if b > 0:
-                        c = 0.5 - b
-                    else:
-                        c = 0.5 + b
-                    my_factor = 1 + c * 1.0
-                    thresh_p = thresh_p * my_factor
-                    
-                    if abs(best_q) > 0.4 and abs(best_q) < 0.6 and i < 70:
-                        thresh_p = thresh_p * 1.2
-                    # if abs(best_q) >= 0.3 and abs(best_q) < 0.4 and i < 70:
-                    #     thresh_p = thresh_p * 1.1
-                    # if abs(best_q) >= 0.4 and abs(best_q) < 0.6 and i < 70:
-                    #     thresh_p = thresh_p * 1.3
-                    # if abs(best_q) > 0.2 and abs(best_q) <= 0.4 or abs(best_q) > 0.6 and abs(best_q) <= 0.8 :
-                    #     thresh_p = thresh_p * 1.1
-                    # if diff_q >= 0.20:
-                    #     thresh_p = 1.0
-
-                    # if diff_q < 0.075:
-                    #     thresh_p = self.value_focus_min
-                    # if diff_q > 0.075 and diff_q < self.value_focus_slope:
-                    #     thresh_p = self.value_focus_min + diff_q * 0.5
-                    # if diff_q > self.value_focus_slope:
-                    #     thresh_p = 1
-                    # if abs(best_q) > 0.3 and abs(best_q) < 0.6:
-                    #     thresh_p = thresh_p * 1.1
-                    if thresh_p < 1.0 and random.random() > thresh_p:
-                        continue
+            # # boost
+            # if abs(best_q) > 0.4 and abs(best_q) < 0.6 and i < 70:
+            #     thresh_p = thresh_p * 1.2
 
             try:
-                yield record
+                r = random.random()
             except:
+                r = 0.5
+
+            if thresh_p < r:
                 continue
+                        
+            # if thresh_p < 1.0 and random.random() > thresh_p:
+            #     continue
+
+            # self.sample = 2
+            # if self.sample > 1:
+            #     # Downsample, using only 1/Nth of the items.
+            #     if random.randint(0, self.sample - 1) != 0:
+            #         continue  # Skip this record.
+
+            yield record
 
     def task(self, chunk_filename_queue, writer):
         """
@@ -571,9 +584,16 @@ class ChunkParser:
         applying a random symmetry on the way.
         """
         for r in gen:
-            f = self.convert_v6_to_tuple(r)
-            if f:
-                yield f
+            yield self.convert_v6_to_tuple(r)
+            # try:
+            #     f = self.convert_v6_to_tuple(r)
+            #     if f:
+            #         yield f
+            #     else:
+            #         print("f is not a record")
+            # except:
+            #     print("failed to convert v6 to tuple")
+            #     return
 
     def batch_gen(self, gen):
         """
