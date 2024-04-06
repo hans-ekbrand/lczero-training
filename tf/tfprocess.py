@@ -181,7 +181,7 @@ class TFProcess:
         self.init_net_v2()
 
     def init_net_v2(self):
-        self.l2reg = tf.keras.regularizers.l2(l=0.5 * (0.0001))
+        self.l2reg = tf.keras.regularizers.l2(l2=0.5 * (0.0001))
         input_var = tf.keras.Input(shape=(112, 8 * 8))
         x_planes = tf.keras.layers.Reshape([112, 8, 8])(input_var)
         policy, value, moves_left = self.construct_net_v2(x_planes)
