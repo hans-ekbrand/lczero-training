@@ -20,9 +20,9 @@
 import numpy as np
 import os
 import tensorflow as tf
-import tensorflow_addons as tfa
-from tensorflow_addons.optimizers.weight_decay_optimizers import (
-    extend_with_decoupled_weight_decay)
+# import tensorflow_addons as tfa
+# from tensorflow_addons.optimizers.weight_decay_optimizers import (
+#     extend_with_decoupled_weight_decay)
 import time
 import bisect
 import lc0_az_policy_map
@@ -416,7 +416,7 @@ class TFProcess:
             self.init_net()
 
     def init_net(self):
-        self.l2reg = tf.keras.regularizers.l2(l=0.5 * (0.0001))
+        self.l2reg = tf.keras.regularizers.l2(l2=0.5 * (0.0001))
         input_var = tf.keras.Input(shape=(112, 8, 8))
         outputs = self.construct_net(input_var)
         self.model = tf.keras.Model(inputs=input_var, outputs=outputs)
