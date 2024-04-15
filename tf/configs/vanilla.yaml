@@ -10,7 +10,7 @@ dataset:
   #  - '/mnt/t82data/training-run1-test80-202308*/'
   #input_test:
   #  - "/mnt/testdata/*/"
-  input: '/home/hans/leela-trainingdata/vanilla-rescored/'  
+  input: '/home/hans/leela-training-games/vanilla-rescored/'
   # train_workers: 8
   # test_workers: 4
 training:
@@ -36,7 +36,7 @@ training:
     # num_test_positions: 131_072
     num_test_positions: 128
     train_avg_report_steps: 100
-    total_steps: 500
+    total_steps: 100
     checkpoint_steps: 50_000
     # shuffle_size: 1_000_000
     shuffle_size: 1_000    
