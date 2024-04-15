@@ -51,7 +51,7 @@ until false # run this loop until further notice
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
       ## No net available yet, these games are cheap so do many
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=10000 --parallelism=12 --visits=10 --backend=random
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=100000 --parallelism=12 --visits=2 --backend=random
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
@@ -76,7 +76,11 @@ until false # run this loop until further notice
   ## has (sshfs) access to the directory where the client drops the
   ## training data. This dir is configured in the yaml file
   export TF_USE_LEGACY_KERAS=1
-  python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
+  if [[ -z $latest_net ]]; then
+      python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}-first-run.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
+  else
+      python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
+  fi
 
   ## Remove the oldest $number_of_games_per_net games from the training window if the window is larger than some threshold or i is low enough so that we know the net is learning very fast.
   ## For now just remove everything
