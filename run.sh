@@ -1,9 +1,13 @@
 #!/bin/bash
 
 ## prerequisites to run this script
+# TODO add -first-run versions for yamls
 # 1. a lc0 recent official binary in ~/src/lc0/build/release/lc0
 # 2. the lczero-training repo available in ~/src (clone/fork from git@github.com:hans-ekbrand/lczero-training.git)
 # 3. a file foo.yaml in ~/src/lczero-training/tf/configs/ for this particular experiment (if the variant is "foo")
+
+## to remove old stuff for a variant called "vanilla" run
+## rm -rf $HOME/leela-nets/vanilla/ $HOME/leelalogs/vanilla-* $HOME/leela-training-games/vanilla* $HOME/vanilla
 
 ## How to run this script
 ## If the yaml-file is called: vanilla.yaml
@@ -13,6 +17,17 @@
 ## bash run.sh r-mobility 1
 ## will use a binary called lc0_r-mobility to create training data and a rescorer called rescorer_r-mobility to rescore
 ## I have branches for the rescorers.
+
+## keep a small proportion of training data to increase the window of training data games
+proportion_to_remove=0.9
+
+## Set number of games before creating a new net.
+number_of_games_per_net=10
+
+## Number of steps per net is defined in the yaml-file.
+
+## Early on, the number of visits will be lower, reaching the max after 80 iterations.
+max_number_of_visits=800
 
 path_to_syzygy="/home/hans/syzygy"
 
@@ -37,11 +52,7 @@ mkdir -p $net_dir
 
 ## to avoid overfitting, note that every step consumes batch_size
 ## number of positions, so 100 steps * batch_size 512 consumes 51.200
-## positions. TODO: implement a window mechanism, so that games can be reused.
-
-number_of_games_per_net=2000
-
-max_number_of_visits=800
+## positions.
 
 until false # run this loop until further notice
 
@@ -51,7 +62,7 @@ until false # run this loop until further notice
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
       ## No net available yet, these games are cheap so do many
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=100000 --parallelism=12 --visits=2 --backend=random
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=20 --parallelism=12 --visits=2 --backend=random
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
@@ -66,9 +77,6 @@ until false # run this loop until further notice
   mkdir -p ${output_dir}
 
   $HOME/src/lc0/build/release/rescorer_${variant} rescore -t 6 --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
-  ## --input=$HOME/.cache/lc0/${dir_name} --output=$HOME/leela-trainingdata/r-mobility-rescored 
-
-  ## $HOME/src/lc0/build/release/rescorer rescore --syzygy-paths=/home/hans/syzygy --threads=2 --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir} --no-rescore
   rmdir ${full_current_dir}
 
   ## Train
@@ -82,9 +90,36 @@ until false # run this loop until further notice
       python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
   fi
 
-  ## Remove the oldest $number_of_games_per_net games from the training window if the window is larger than some threshold or i is low enough so that we know the net is learning very fast.
-  ## For now just remove everything
-  rm $HOME/leela-training-games/${variant}-rescored/*
+  ## Remove the oldest $number_of_games_per_net * 0.9 games from the training window if we have passed the first iteration.
+  if [[ -z $latest_net ]]; then  
+      rm $HOME/leela-training-games/${variant}-rescored/*
+  else
+      rm $HOME/leela-training-games/${variant}-rescored/chunknames.pkl      
+      # Calculate the product and round the result to 
+      games_to_remove=$(echo "scale=0; ($number_of_games_per_net * $proportion_to_remove + 0.5)/1" | bc)
+      # Get the total number of files in the directory
+      total_files=$(ls -1 $HOME/leela-training-games/${variant}-rescored | wc -l)
+
+      # Calculate the number of files to keep
+      files_to_keep=$(($total_files-$games_to_remove))
+
+      # Delete the files
+      ls -t $HOME/leela-training-games/${variant}-rescored | tail -n +$(($files_to_keep+1)) | xargs -I {} rm -- "$HOME/leela-training-games/${variant}-rescored/{}"
+  fi
+
+  # Get the current hour (24 hour format)
+  current_hour=$(date +%H)
+
+  # Define the hour to exit the script
+  exit_hour=7
+
+  if (( current_hour >= exit_hour )); then
+      echo "It's past ${exit_hour}. Exiting the script."
+      exit 0
+  else
+      echo "It's before ${exit_hour}. Continue the script."
+      # Continue with the rest of the script
+  fi
 
   ((i=i+1))
 done
