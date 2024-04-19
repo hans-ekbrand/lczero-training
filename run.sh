@@ -39,7 +39,7 @@ mkdir -p ~/leela-training-games/${variant}
 export XDG_CACHE_HOME=$HOME/leela-training-games/${variant}
 
 if [[  -z $2 ]]; then
-    echo "Required parameter counter missing. To start over use 1"
+    echo "`date "+%Y-%m-%d %H:%M:%S"` Required parameter counter missing. To start over use 1"
     exit 0
 else
     ## counter to keep track of the number of the current net, so we can restart the process without overwriting existing nets.
@@ -62,7 +62,7 @@ until false # run this loop until further notice
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
       ## No net available yet, these games are cheap so do many
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=10000 --parallelism=12 --visits=2 --backend=random
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=1000 --parallelism=12 --visits=2 --backend=random
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
@@ -78,27 +78,30 @@ until false # run this loop until further notice
 
   number_of_remaining_training_data_chunks=`ls ${output_dir} | wc | awk {'print $1'}`
   number_of_new_training_games=`ls ${XDG_CACHE_HOME}/lc0/${current_dir} | wc | awk {'print $1'}`
-  $HOME/src/lc0/build/release/rescorer_${variant} rescore -t 6 --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
+  $HOME/src/lc0/build/release/rescorer_${variant} rescore -t `nproc --all` --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
   ## Since we want to train on both new and remaining chunks, dont use the manifest file which (I assume) only include the new chunks.
-  rm $HOME/leela-training-games/${variant}-rescored/chunknames.pkl
+  if [[ -f $HOME/leela-training-games/${variant}-rescored/chunknames.pkl ]]; then
+      rm $HOME/leela-training-games/${variant}-rescored/chunknames.pkl
+  fi
   ## how many games turned out useful as training data?
   total_number_of_training_data_chunks=`ls ${output_dir} | wc | awk {'print $1'}`
   let number_of_new_training_data_chunks=total_number_of_training_data_chunks-number_of_remaining_training_data_chunks
   rmdir ${full_current_dir}
-  echo "Number of new training games: ${number_of_new_training_games}, number of new training data chunks: ${number_of_new_training_data_chunks}."
+  echo "`date "+%Y-%m-%d %H:%M:%S"` Number of remaining training data chunks from the previous iteration: ${number_of_remaining_training_data_chunks}. Number of new training games: ${number_of_new_training_games}, number of new training data chunks: ${number_of_new_training_data_chunks}."
+  echo "oldest training data chunk is dated: `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n 1`"
 
   ## Train
   ## If the training server is not the local computer, make sure it
   ## has (sshfs) access to the directory where the client drops the
   ## training data. This dir is configured in the yaml file
   export TF_USE_LEGACY_KERAS=1
+  echo "`date "+%Y-%m-%d %H:%M:%S"` Starting training iteration ${i} (generating net named ${i}.gz)"
   python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
 
-  ## Remove the oldest $number_of_games_per_net * 0.9 games from the training window if we have passed the first iteration.
-  if [[ -z $latest_net ]]; then  
+  ## if we have passed the first iteration then only remove a proportion of the oldest games from the training window.
+  if [[ -z $latest_net ]]; then
       rm $HOME/leela-training-games/${variant}-rescored/*
   else
-      # rm $HOME/leela-training-games/${variant}-rescored/chunknames.pkl      
       # Calculate the product and round the result to 
       games_to_remove=$(echo "scale=0; ($number_of_new_training_data_chunks * $proportion_to_remove + 0.5)/1" | bc)
       if [[ $games_to_remove -gt 0 ]]; then
@@ -108,32 +111,28 @@ until false # run this loop until further notice
 	  # Calculate the number of files to keep
 	  files_to_keep=$(($total_files-$games_to_remove))
 
-	  ## if files_to_keep is not a positive number, then remove all files
-	  if [[ 1 -gt $files_to_keep ]]; then
-	      ## Delete all files
-	      echo "Deleting all rescored files"
-	      rm -rf $HOME/leela-training-games/${variant}-rescored/*
-	  else
-	      # Delete some files
-	      echo "Deleting the ${games_to_remove} oldest rescored files"
-	      ls -t $HOME/leela-training-games/${variant}-rescored | tail -n +$(($files_to_keep+1)) | xargs -I {} rm -- "$HOME/leela-training-games/${variant}-rescored/{}"
-	  fi
+	  # Delete some files
+	  echo "`date "+%Y-%m-%d %H:%M:%S"` Deleting the ${games_to_remove} oldest rescored files, keeping ${files_to_keep} files. Youngest file to delete is "
+	  echo "`ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n 1`"
+	  echo "Oldest file to delete is `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | | tail -n 1`"
+	  echo "Oldest file to keep is `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | | head -n 1`"	  
+	  ls -t $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | xargs -I {} rm -- "$HOME/leela-training-games/${variant}-rescored/{}"
       fi
   fi
 
-  # Get the current hour (24 hour format)
-  current_hour=$(date +%H)
+  # # Get the current hour (24 hour format)
+  # current_hour=$(date +%H)
 
-  # Define the hour to exit the script
-  exit_hour=7
+  # # Define the hour to exit the script
+  # exit_hour=7
 
-  if (( current_hour >= exit_hour )); then
-      echo "It's past ${exit_hour}. Exiting the script."
-      exit 0
-  else
-      echo "It's before ${exit_hour}. Continue the script."
-      # Continue with the rest of the script
-  fi
+  # if (( current_hour >= exit_hour )); then
+  #     echo "It's past ${exit_hour}. Exiting the script."
+  #     exit 0
+  # else
+  #     echo "It's before ${exit_hour}. Continue the script."
+  #     # Continue with the rest of the script
+  # fi
 
   ((i=i+1))
 done
