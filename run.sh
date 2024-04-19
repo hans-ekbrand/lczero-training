@@ -66,7 +66,7 @@ until false # run this loop until further notice
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay -w ${net_dir}/${latest_net} --training --games=$number_of_games_per_net --visits=${number_of_visits};
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay -w ${net_dir}/${latest_net} --backend-opts=max_batch=256 --training --games=$number_of_games_per_net --visits=${number_of_visits};
   fi
 
   ## Rescore
