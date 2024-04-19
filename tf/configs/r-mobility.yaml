@@ -1,6 +1,6 @@
 %YAML 1.2
 --- 
-name: 'rmobility'
+name: 'r-mobility'
 gpu:  0
 dataset:
   num_chunks: 500_000_000
@@ -11,8 +11,8 @@ dataset:
   #input_test:
   #  - "/mnt/testdata/*/"
   input: '/home/hans/leela-training-games/r-mobility-rescored/'
-  # train_workers: 8
-  # test_workers: 4
+  train_workers: 3
+  test_workers: 2
 training:
     precision: half 
     swa: true
@@ -21,9 +21,9 @@ training:
     swa_steps: 100
     max_grad_norm: 1.0
     # batch_size: 2048
-    batch_size: 512
+    batch_size: 2048
     # num_batch_splits: 1
-    num_batch_splits: 2
+    num_batch_splits: 8
     value_focus_min: 1.0
     value_focus_slope: 0.0
     lookahead_optimizer: false
@@ -31,18 +31,18 @@ training:
     renorm_max_r: 1.0
     renorm_max_d: 0.0
     # test_steps: 1000
-    test_steps: 100    
+    test_steps: 50
     # validation_steps: 5000
     # num_test_positions: 131_072
-    num_test_positions: 128
+    num_test_positions: 2500
     train_avg_report_steps: 100
     total_steps: 100
     checkpoint_steps: 50_000
     # shuffle_size: 1_000_000
-    shuffle_size: 1_000    
+    shuffle_size: 3_000
     warmup_steps: 100
     mask_legal_moves: true
-    lr_values: 
+    lr_values:
         - 0.001
         - 0.001
     lr_boundaries:
@@ -66,12 +66,12 @@ training:
     path: '/home/hans'
 
     optimizer: nadam # sgd/nadam/rmsprop/adabelief/adam
-    beta_1: 0.9 
-    beta_2: 0.98 
+    beta_1: 0.9
+    beta_2: 0.98
     epsilon: 0.00000001 # 1e-7
     sparse: false
 
-model:              
+model:
     embedding_size: 512
     policy_embedding_size: 512
     value_embedding_size: 128
