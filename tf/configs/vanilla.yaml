@@ -10,7 +10,7 @@ dataset:
   #  - '/mnt/t82data/training-run1-test80-202308*/'
   #input_test:
   #  - "/mnt/testdata/*/"
-  input: '/home/hans/leela-training-games/r-mobility-rescored/'
+  input: '/home/hans/leela-training-games/vanilla-rescored/'
   train_workers: 3
   test_workers: 2
 training:
