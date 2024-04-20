@@ -19,10 +19,7 @@
 ## I have branches for the rescorers.
 
 ## keep a small proportion of training data to increase the window of training data games
-proportion_to_remove=0.75
-
-## Set number of games before creating a new net.
-number_of_games_per_net=500
+proportion_to_remove=0.90
 
 ## Number of steps per net is defined in the yaml-file.
 
@@ -46,6 +43,17 @@ else
     i=$2
 fi
 
+## Create a function to determine the number of new games required for creating a new net
+## which depends on the iteration number i
+## At i = 1 the outcome should be 500
+## at i = 50 the outcome is about 1420
+## at i = 100 the outcome should be 2000
+
+## us arctan which is bounded
+## Set number of games before creating a new net.
+number_of_games_per_net= $(echo "scale=2; 500 + 2000 * a($i/100)" | bc -l | cut -d "." -f 1)
+echo "At iteration $i producing $number_of_games_per_net before training a new net"
+
 ## where are the nets stored?
 net_dir=$HOME/leela-nets/${variant}
 mkdir -p $net_dir
@@ -62,7 +70,7 @@ until false # run this loop until further notice
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
       ## No net available yet, these games are cheap so do many
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=1000 --parallelism=12 --visits=2 --backend=random
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=10000 --parallelism=12 --visits=2 --backend=random
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
@@ -83,15 +91,13 @@ until false # run this loop until further notice
   
   $HOME/src/lc0/build/release/rescorer_${variant} rescore -t `nproc --all` --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
   ## Since we want to train on both new and remaining chunks, dont use the manifest file which (I assume) only include the new chunks.
-  if [[ -f $HOME/leela-training-games/${variant}-rescored/chunknames.pkl ]]; then
-      rm $HOME/leela-training-games/${variant}-rescored/chunknames.pkl
+  if [[ -f ${output_dir}/chunknames.pkl ]]; then
+      rm ${output_dir}/chunknames.pkl
   fi
   ## how many games turned out useful as training data?
   total_number_of_training_data_chunks=`ls ${output_dir} | wc | awk {'print $1'}`
   let number_of_new_training_data_chunks=total_number_of_training_data_chunks-number_of_remaining_training_data_chunks
   rmdir ${full_current_dir}
-  echo "`date "+%Y-%m-%d %H:%M:%S"` Number of remaining training data chunks from the previous iteration: ${number_of_remaining_training_data_chunks}. Number of new training games: ${number_of_new_training_games}, number of new training data chunks: ${number_of_new_training_data_chunks}."
-  echo "oldest training data chunk is dated: `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n 1`"
 
   ## Train
   ## If the training server is not the local computer, make sure it
@@ -109,20 +115,27 @@ until false # run this loop until further notice
       games_to_remove=$(echo "scale=0; ($number_of_new_training_data_chunks * $proportion_to_remove + 0.5)/1" | bc)
       if [[ $games_to_remove -gt 0 ]]; then
 	  # Get the total number of files in the directory
-	  total_files=$(ls -1 $HOME/leela-training-games/${variant}-rescored | wc -l)
+	  total_files=$(ls ${output_dir} | wc | awk {'print $1'})
 
 	  # Calculate the number of files to keep
 	  files_to_keep=$(($total_files-$games_to_remove))
 
-	  # Delete some files
-	  echo "`date "+%Y-%m-%d %H:%M:%S"` Deleting the ${games_to_remove} oldest rescored files, keeping ${files_to_keep} files. Youngest file to delete is "
-	  echo "`ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n 1`"
-	  echo "Oldest file to delete is `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | | tail -n 1`"
-	  echo "Oldest file to keep is `ls -lSt $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | | head -n 1`"	  
-	  ls -t $HOME/leela-training-games/${variant}-rescored | tail -n +$(($games_to_remove)) | xargs -I {} rm -- "$HOME/leela-training-games/${variant}-rescored/{}"
+	  echo "`date "+%Y-%m-%d %H:%M:%S"` Number of remaining training data chunks from the previous iteration: ${number_of_remaining_training_data_chunks}. Number of new training games: ${number_of_new_training_games}, number of new training data chunks: ${number_of_new_training_data_chunks}. Number of games to remove (should be equal to number_of_new_training_data_chunks * 0.75): ${games_to_remove}. Total Number of training data chunks before deletions: ${total_files}. Target number of files after deletion: ${files_to_keep}."
+	  # echo "oldest training data chunk is dated: `ls -lSt  --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | tail -n 1`"
+	  # echo "youngest training data chunk is dated: `ls -lSt --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | head -n 2 | tail -n 1`"
+	  # echo "yongest training data to delete: `ls -lSt  --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | tail -n +$(($files_to_keep)) | head -n 1`"
+	  # echo "oldest training data to keep: `ls -lSt  --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | tail -n +$(($files_to_keep + 1)) | head -n 1`"
+
+	  # Delete the oldest files
+	  ls -t $output_dir | tail -n $games_to_remove | xargs -I {} rm $output_dir/{} ;
+	  # echo "verify that the right files where deleted, oldest remaining file is: `ls -lSt  --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | tail -n $(($games_to_remove-1)) | head -n 1` and youngest remaining file is `ls -lSt --time-style=full-iso $HOME/leela-training-games/${variant}-rescored | head -n 2 | tail -n 1`"
+	  new_total_files=$(ls ${output_dir} | wc | awk {'print $1'})
+	  echo "number of files added by this iteration: $(($new_total_files-${number_of_remaining_training_data_chunks}))"
+	  echo "number of files remaining after this iteration: $(($new_total_files))"
       fi
   fi
 
+  ## if you want the script to stop based on time of the day (due to varying electricity prices over the course of the day) use the chunk below.
   # # Get the current hour (24 hour format)
   # current_hour=$(date +%H)
 
