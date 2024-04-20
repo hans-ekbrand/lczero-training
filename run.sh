@@ -73,11 +73,14 @@ until false # run this loop until further notice
   full_current_dir=`ls -Strd ${XDG_CACHE_HOME}/lc0/data* | tail -n 1`
   current_dir=`basename $full_current_dir`
   output_dir=$HOME/leela-training-games/${variant}-rescored
-  ## output_dir=${XDG_CACHE_HOME}/rescored/${current_dir}
   mkdir -p ${output_dir}
 
   number_of_remaining_training_data_chunks=`ls ${output_dir} | wc | awk {'print $1'}`
   number_of_new_training_games=`ls ${XDG_CACHE_HOME}/lc0/${current_dir} | wc | awk {'print $1'}`
+
+  ## rename the new games so that they will have unique filename and not be overwritten in the next iteration
+  rename -d "s/\.gz/_${current_dir}\.gz/" ${XDG_CACHE_HOME}/lc0/${current_dir}/*gz
+  
   $HOME/src/lc0/build/release/rescorer_${variant} rescore -t `nproc --all` --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
   ## Since we want to train on both new and remaining chunks, dont use the manifest file which (I assume) only include the new chunks.
   if [[ -f $HOME/leela-training-games/${variant}-rescored/chunknames.pkl ]]; then
