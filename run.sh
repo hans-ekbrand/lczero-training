@@ -43,17 +43,6 @@ else
     i=$2
 fi
 
-## Create a function to determine the number of new games required for creating a new net
-## which depends on the iteration number i
-## At i = 1 the outcome should be 500
-## at i = 50 the outcome is about 1420
-## at i = 100 the outcome should be 2000
-
-## us arctan which is bounded
-## Set number of games before creating a new net.
-number_of_games_per_net= $(echo "scale=2; 500 + 2000 * a($i/100)" | bc -l | cut -d "." -f 1)
-echo "At iteration $i producing $number_of_games_per_net before training a new net"
-
 ## where are the nets stored?
 net_dir=$HOME/leela-nets/${variant}
 mkdir -p $net_dir
@@ -62,10 +51,20 @@ mkdir -p $net_dir
 ## number of positions, so 100 steps * batch_size 512 consumes 51.200
 ## positions.
 
-until false # run this loop until further notice
-
+until false; do # run this loop until further notice
   ## Generate training data
-  do
+
+  ## Create a function to determine the number of new games required for creating a new net
+  ## which depends on the iteration number i
+  ## At i = 1 the outcome should be 500
+  ## at i = 50 the outcome is about 1420
+  ## at i = 100 the outcome should be 2000
+
+  ## us arctan which is bounded
+  ## Set number of games before creating a new net.
+  number_of_games_per_net=$(echo "scale=2; 500 + 2000 * a($i/100)" | bc -l | cut -d "." -f 1)
+  echo "At iteration $i producing $number_of_games_per_net games before training a new net"
+    
   ## which net is the current net (used for the game generation), this command find the latest modified file.
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
