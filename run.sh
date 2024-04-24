@@ -64,16 +64,18 @@ until false; do # run this loop until further notice
   ## Set number of games before creating a new net.
   number_of_games_per_net=$(echo "scale=2; 500 + 2000 * a($i/100)" | bc -l | cut -d "." -f 1)
   echo "At iteration $i producing $number_of_games_per_net games before training a new net"
-    
+
+--minimum-kldgain-per-node=0.000050, --openings-pgn=books/run2_book.pgn.gz, --openings-mode=shuffled, 
+  
   ## which net is the current net (used for the game generation), this command find the latest modified file.
   latest_net=`ls -Str ${net_dir} | tail -n 1`
   if [[ -z $latest_net ]]; then
       ## No net available yet, these games are cheap so do many
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=10000 --parallelism=12 --visits=2 --backend=random
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay --training --games=10000 --parallelism=12 --visits=2 --backend=random --cpuct=1.32 --cpuct-at-root=2.0 --root-has-own-cpuct-params=true --resign-percentage=2.0 --resign-playthrough=0 --temperature=0.9 --temp-endgame=0.60 --tempdecay-moves=60 --tempdecay-delay-moves=20 --temp-cutoff-move=40 --temp-visit-offset=-0.8 --fpu-strategy=reduction --fpu-value=0.26 --fpu-strategy-at-root=absolute --fpu-value-at-root=1.0 --policy-softmax-temp=1.45 --resign-wdlstyle=true --noise-epsilon=0.1 --noise-alpha=0.12 --sticky-endgames=true --moves-left-max-effect=0.2 --moves-left-threshold=0.0 --moves-left-slope=0.007 --moves-left-quadratic-factor=0.85 --moves-left-scaled-factor=0.15 --moves-left-constant-factor=0.0 --task-workers=0
   else
       # Use the latest net
       number_of_visits=$(( max_number_of_visits < i*10 ? max_number_of_visits : i*10 ))
-      $HOME/src/lc0/build/release/lc0_${variant} selfplay -w ${net_dir}/${latest_net} --backend-opts=max_batch=256 --training --games=$number_of_games_per_net --visits=${number_of_visits};
+      $HOME/src/lc0/build/release/lc0_${variant} selfplay -w ${net_dir}/${latest_net} --backend-opts=max_batch=256 --training --games=$number_of_games_per_net --visits=${number_of_visits} --cpuct=1.32 --cpuct-at-root=2.0 --root-has-own-cpuct-params=true --resign-percentage=2.0 --resign-playthrough=0 --temperature=0.9 --temp-endgame=0.60 --tempdecay-moves=60 --tempdecay-delay-moves=20 --temp-cutoff-move=40 --temp-visit-offset=-0.8 --fpu-strategy=reduction --fpu-value=0.26 --fpu-strategy-at-root=absolute --fpu-value-at-root=1.0 --policy-softmax-temp=1.45 --resign-wdlstyle=true --noise-epsilon=0.1 --noise-alpha=0.12 --sticky-endgames=true --moves-left-max-effect=0.2 --moves-left-threshold=0.0 --moves-left-slope=0.007 --moves-left-quadratic-factor=0.85 --moves-left-scaled-factor=0.15 --moves-left-constant-factor=0.0 --task-workers=0
   fi
 
   ## Rescore
