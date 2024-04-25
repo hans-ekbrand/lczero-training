@@ -341,9 +341,13 @@ def convert_v7b_to_tuple(content):
 
     assert len(planes) == ((8 * 13 * 1 + 8 * 1 * 1) * 8 * 8 * 4)
 
+    ## r-mobility hack: make winner defined when the result is between 0 and 1 and between 0 and -1.
+    ## Set winner to "draw" when no side achieved 1.0. This should be a no-op on vanilla data.
     if ver == V6_VERSION or ver == V7_VERSION:
+        # winner = struct.pack("fff", 0.5 * (1.0 - result_d + result_q),
+        #                         result_d, 0.5 * (1.0 - result_d - result_q))
         winner = struct.pack("fff", 0.5 * (1.0 - result_d + result_q),
-                                result_d, 0.5 * (1.0 - result_d - result_q))
+                                result_q < 1 and result_q > -1, 0.5 * (1.0 - result_d - result_q))
     else:
         dep_result = float(dep_result)
         assert dep_result == 1.0 or dep_result == -1.0 or dep_result == 0.0
