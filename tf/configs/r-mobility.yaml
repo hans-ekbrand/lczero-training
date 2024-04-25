@@ -5,7 +5,6 @@ gpu:  0
 dataset:
   num_chunks: 500_000_000
   allow_less_chunks: true
-  fast_chunk_loading: false
   train_ratio: 0.95
   #input_train: 
   #  - '/mnt/t82data/training-run1-test80-202308*/'
