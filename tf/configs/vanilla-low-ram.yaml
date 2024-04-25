@@ -21,7 +21,7 @@ training:
     swa_steps: 100
     max_grad_norm: 1.0
     # batch_size: 2048
-    batch_size: 1024
+    batch_size: 1536
     # num_batch_splits: 1
     num_batch_splits: 64
     value_focus_min: 1.0
