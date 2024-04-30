@@ -34,7 +34,7 @@ training:
     test_steps: 50
     # validation_steps: 5000
     # num_test_positions: 131_072
-    num_test_positions: 2500
+    num_test_positions: 10_000
     train_avg_report_steps: 100
     total_steps: 100
     checkpoint_steps: 50_000
