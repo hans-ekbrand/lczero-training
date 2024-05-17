@@ -15,10 +15,10 @@ dataset:
   test_workers: 2
 training:
     precision: half 
-    swa: true
-    swa_output: true  
-    swa_max_n: 10
-    swa_steps: 100
+    swa: false
+    # swa_output: true  
+    # swa_max_n: 10
+    # swa_steps: 100
     max_grad_norm: 1.0
     # batch_size: 2048
     batch_size: 1536
@@ -34,7 +34,7 @@ training:
     test_steps: 50
     # validation_steps: 5000
     # num_test_positions: 131_072
-    num_test_positions: 10_000
+    num_test_positions: 512 # Not using SWA, so now we only need enough to make sure to avoid overfitting.
     train_avg_report_steps: 100
     total_steps: 100
     checkpoint_steps: 50_000

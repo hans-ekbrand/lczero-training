@@ -373,6 +373,9 @@ def convert_v7b_to_tuple(content):
     fut = np.unpackbits(np.frombuffer(fut, dtype=np.uint8)).astype(
         np.float32)
 
+    ## debug:
+    # print("winner: {}, root_wdl: {}, st_wdl: {}".format(winner, root_wdl, st_wdl))
+
     return (planes, probs, winner, root_wdl, plies_left, st_wdl, opp_probs, next_probs, fut)
 
 
