@@ -91,7 +91,7 @@ until false; do # run this loop until further notice
   ## rename the new games so that they will have unique filename and not be overwritten in the next iteration
   rename -d "s/\.gz/_${current_dir}\.gz/" ${XDG_CACHE_HOME}/lc0/${current_dir}/*gz
   
-  $HOME/src/lc0/build/release/rescorer_${variant} rescore -t `nproc --all` --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
+  $HOME/src/lc0/build/release/rescorer_${variant} rescore --deblunder -t `nproc --all` --syzygy-paths=$path_to_syzygy --input=${XDG_CACHE_HOME}/lc0/${current_dir} --output=${output_dir}
   ## Since we want to train on both new and remaining chunks, dont use the manifest file which (I assume) only include the new chunks.
   if [[ -f ${output_dir}/chunknames.pkl ]]; then
       rm ${output_dir}/chunknames.pkl

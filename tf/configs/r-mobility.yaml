@@ -1,16 +1,22 @@
 %YAML 1.2
 --- 
-name: 'r-mobility'
+name: 'r-mobility-synthetic'
 gpu:  0
 dataset:
-  num_chunks: 500_000_000
+  num_chunks: 3_335_486
   allow_less_chunks: true
   train_ratio: 0.95
   #input_train: 
   #  - '/mnt/t82data/training-run1-test80-202308*/'
   #input_test:
   #  - "/mnt/testdata/*/"
-  input: '/home/hans/leela-training-games/r-mobility-rescored/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic_starting_positions/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic_starting_positions-6-men-second-try/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic-7-men/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic-9-men-2/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic-6-7-men/'
+  # input: '/home/hans/leela-training-games/rescored_synthetic-6-14-men/'
+  input: '/home/hans/leela-training-games/rescored_synthetic_pool/'    
   train_workers: 3
   test_workers: 2
 training:
@@ -20,9 +26,12 @@ training:
     swa_max_n: 10
     swa_steps: 100
     max_grad_norm: 1.0
-    # batch_size: 2048
-    batch_size: 2048
-    # num_batch_splits: 1
+    ## works for positions with up to 7 men    
+    ## batch_size: 2024
+    ## crashes for positions with up to 9 men
+    ## batch_size: 2016
+    ## batch_size: 2008
+    batch_size: 2000
     num_batch_splits: 8
     value_focus_min: 1.0
     value_focus_slope: 0.0
@@ -31,20 +40,20 @@ training:
     renorm_max_r: 1.0
     renorm_max_d: 0.0
     # test_steps: 1000
-    test_steps: 50
+    test_steps: 100
     # validation_steps: 5000
     # num_test_positions: 131_072
-    num_test_positions: 10_000
+    num_test_positions: 20_000
     train_avg_report_steps: 100
-    total_steps: 100
-    checkpoint_steps: 50_000
+    total_steps: 3_500
+    checkpoint_steps: 100
     # shuffle_size: 1_000_000
-    shuffle_size: 15_000
+    shuffle_size: 100_000
     warmup_steps: 1000
     mask_legal_moves: true
     lr_values:
-        - 0.0001
-        - 0.0001
+        - 0.001
+        - 0.001
     lr_boundaries:
         - 100
     loss_weights:
@@ -53,10 +62,10 @@ training:
         policy_soft: 8.0 # loss is much smaller at optimum
         policy_opponent: 0.1
         policy_next: 0.1
-        value_winner: 1.0
+        value_winner: 1.0 
         value_q: 1.0
         value_q_cat: 0.1
-        value_st: 1.0 # larger becausec mse loss
+        value_st: 1.0 # larger because mse loss
         value_q_err: 1.0  # both error weights should be the same
         value_st_err: 1.0
         value_st_cat: 0.1

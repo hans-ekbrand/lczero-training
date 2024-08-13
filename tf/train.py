@@ -30,7 +30,8 @@ import random
 import pickle
 
 
-SKIP = 64
+# SKIP = 64
+SKIP = 32
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
