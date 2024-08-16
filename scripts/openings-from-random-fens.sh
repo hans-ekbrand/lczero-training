@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## openings from random fens
-usage bash openings-from-random-fens.sh 20000 14
+## usage: bash openings-from-random-fens.sh 20000 14
 
 number_of_desired_lines=$1
 number_of_pieces=$2
