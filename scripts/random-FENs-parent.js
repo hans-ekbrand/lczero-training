@@ -1,4 +1,4 @@
-// Example usage: node generateFENs.js 14 1000000 false
+// Example usage: node generateFENs.random-FENs-parent 14 1000000 false
 
 const numberOfPieces = parseInt(process.argv[2]); // Read the first command-line argument
 const numberOfFENsToGenerate = parseInt(process.argv[3]); // Read the second command-line argument
