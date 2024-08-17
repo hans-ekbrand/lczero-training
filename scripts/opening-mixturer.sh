@@ -30,3 +30,5 @@ sample3=$(echo "$total_lines - $sample1 - $sample2" | bc)
 # Sample lines from each file and combine them using pipes, back into pgn format
 { shuf -n "$sample1" "$file1"; shuf -n "$sample2" "$file2"; shuf -n "$sample3" "$file3"; } | shuf | awk '{ print $0; print "*\n" }'
 
+rm temp.file.1 temp.file.2 temp.file.3
+
