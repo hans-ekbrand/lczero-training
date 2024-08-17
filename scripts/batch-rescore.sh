@@ -1,6 +1,6 @@
 #!/bin/bash
 
-bash ~/unique-ify-by-folder-name-outer.sh
+bash ~/src/lczero-training/scripts/unique-ify-by-folder-name-outer.sh
 for i in /home/hans/leela-training-games/lc0/*; do
     echo ${i};
     rmdir --ignore-fail-on-non-empty ${i};
