@@ -28,10 +28,9 @@ latest_net=`ls -t ~/r-mobility-synthetic/*swa*.gz | head -n1`
 ## works with a symlink, but the file has to have a newer timestamp than any .txt file in that dir.
 ## which is a reason to let file suffix from generation remain .pgn even it is not a pgn when
 ## invoked with "false"
-if [[ ! -L `basename $latest_net` ]]; then
-    rm *.gz ## remove obsolete link
-    ln -s $latest_net .
-fi
+
+rm -rf *.gz ## remove obsolete link
+ln -s $latest_net .
 python3 ~/src/lczero-training/scripts/q-from-fens.py -i ${number_of_pieces}-men-fens.pgn > evaluated-${number_of_pieces}-men-fens.txt
 ## creates evaluated-${number_of_pieces}-men-fens.txt
 
