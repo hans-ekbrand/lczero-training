@@ -11,5 +11,40 @@ for i in {1..10} ; do
     bash ~/src/lczero-training/scripts/batch-rescore.sh
     python3 $HOME/src/lczero-training/tf/train.py --cfg $HOME/src/lczero-training/tf/configs/${variant}.yaml --output $HOME/leela-nets/${variant}/${i}.gz;
     bash ~/src/lczero-training/scripts/bookmaker.sh
+
+    # if you want the script to stop based on time of the day (due to varying electricity prices over the course of the day) use the chunk below.
+    # Get the current hour (24 hour format)
+    current_hour=$(date +%H)
+
+    # Explicitly state the base of the number (otherwise "08" will be interpreted as an illegal octal number.
+    current_hour=$((10#$current_hour))
+
+    # Define the target hour (24-hour format)
+    target_hour=22    
+
+    # Define the hour to pause the script
+    pause_hour=6
+
+    if (( current_hour >= pause_hour )); then
+	echo "It's past ${pause_hour}. Pausing the script."
+	while true; do
+	    current_hour=$(date +%H)
+	    current_hour=$((10#$current_hour))  # Explicitly state the base
+
+	    if ((current_hour >= target_hour)); then
+		echo "It's ${current_hour}:00. Exiting the wait loop."
+		break
+	    else
+		# Calculate time remaining until the target hour
+		hours_remaining=$((target_hour - current_hour))
+		echo "It's ${current_hour}:00. Waiting for ${target_hour}:00 (about ${hours_remaining} hours left)..."
+		sleep "$((hours_remaining * 3600))"  # Sleep for the remaining hours
+	    fi
+	done
+    else
+	echo "It's before ${pause_hour}. Continue the script."
+	# Continue with the rest of the script
+    fi
+    
 done
 
