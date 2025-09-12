@@ -1,6 +1,6 @@
 %YAML 1.2
 --- 
-name: 'r-mobility-3'
+name: 'r-mobility-4'
 gpu:  0
 dataset:
   num_chunks: 500_000_000
@@ -22,7 +22,7 @@ training:
     swa_steps: 100
     max_grad_norm: 1.0
     # batch_size: 2048
-    batch_size: 2048
+    batch_size: 3072
     num_batch_splits: 8
     # num_batch_splits: 8
     value_focus_min: 1.0
