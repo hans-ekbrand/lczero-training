@@ -12,7 +12,7 @@ bash ~/src/lczero-training/scripts/openings-from-random-fens.sh 14 20000 0.2
 if [[ ! -f starting_pos.txt ]]; then
     printf '[FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"]\n%.0s' {1..20000} > starting_pos.txt
 fi
-bash ~/src/lczero-training/scripts/opening-mixturer.sh 20000 0.7 0.1 6-14-men-fens-from-leela-training-data-with-delta_q_0_1.pgn starting_pos.txt ~/run-q-from-fens-here/selected-14-men-fens.pgn > /home/hans/opening-book.pgn
+bash ~/src/lczero-training/scripts/opening-mixturer.sh 20000 0.7 0.2 6-14-men-fens-from-leela-training-data-with-delta_q_0_1.pgn starting_pos.txt ~/run-q-from-fens-here/selected-14-men-fens.pgn > /home/hans/opening-book.pgn
 
 ## split the opening book in parts, so that each client only gets unique lines
 let lines=`wc opening-book.pgn | awk {'print $1'}`/2

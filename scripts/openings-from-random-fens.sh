@@ -31,6 +31,9 @@ latest_net=`ls -t ~/r-mobility-synthetic/*swa*.gz | head -n1`
 
 rm -rf *.gz ## remove obsolete link
 ln -s $latest_net .
+## make it the newest file in the folder
+touch *.gz
+
 python3 ~/src/lczero-training/scripts/q-from-fens.py -i ${number_of_pieces}-men-fens.pgn > evaluated-${number_of_pieces}-men-fens.txt
 ## creates evaluated-${number_of_pieces}-men-fens.txt
 
