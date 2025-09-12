@@ -1,6 +1,6 @@
 %YAML 1.2
 --- 
-name: 'r-mobility-2'
+name: 'r-mobility-3'
 gpu:  0
 dataset:
   num_chunks: 500_000_000
@@ -10,7 +10,8 @@ dataset:
   #  - '/mnt/t82data/training-run1-test80-202308*/'
   #input_test:
   #  - "/mnt/testdata/*/"
-  input: '/home/hans/leela-training-games/r-mobility-2-rescored/'
+  # input: '/home/hans/leela-training-games/r-mobility-2-rescored/'
+  input: '/home/hans/rescored/'
   train_workers: 3
   test_workers: 2
 training:
@@ -22,8 +23,8 @@ training:
     max_grad_norm: 1.0
     # batch_size: 2048
     batch_size: 2048
-    # num_batch_splits: 1
     num_batch_splits: 8
+    # num_batch_splits: 8
     value_focus_min: 1.0
     value_focus_slope: 0.0
     lookahead_optimizer: false
