@@ -16,4 +16,8 @@ delta.q <- as.numeric(args[2])
 
 foo <- read.table(paste0('evaluated-', number.of.pieces, "-men-fens.txt"), sep = ",")
 these <- which((foo$V2 < 0.5 + delta.q & foo$V2 > 0.5 - delta.q) | (foo$V2 < -0.5 + delta.q & foo$V2 > -0.5 - delta.q))
-cat(paste0('[FEN "', foo$V1[these], '"', "]\n*\n\n"), file = paste0("selected-", number.of.pieces, "-men-fens.pgn"), sep = "")
+if(length(args) > 2 & args[3] == "PGN"){
+    cat(paste0('[FEN "', foo$V1[these], '"', "]\n*\n\n"), file = paste0("selected-", number.of.pieces, "-men.pgn"), sep = "")
+} else {
+    cat(foo$V1[these], file = paste0("selected-", number.of.pieces, "-men.epd"), sep = "\n")
+}
